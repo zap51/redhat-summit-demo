@@ -1,0 +1,215 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kanban Board</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+        
+        .header {
+            background-color: #333;
+            color: #fff;
+            padding: 1em;
+            text-align: center;
+        }
+        
+        .board {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            grid-gap: 10px;
+            padding: 20px;
+        }
+        
+        .column {
+            background-color: #f0f0f0;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            min-height: 200px;
+        }
+        
+        .column-header {
+            background-color: #333;
+            color: #fff;
+            padding: 10px;
+            border-bottom: 1px solid #ddd;
+            border-top-left-radius: 10px;
+            border-top-right-radius: 10px;
+        }
+        
+        .card {
+            background-color: #fff;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            cursor: move;
+        }
+        
+        .card-title {
+            font-weight: bold;
+            font-size: 18px;
+            margin-bottom: 10px;
+        }
+        
+        .card-description {
+            font-size: 14px;
+            color: #666;
+        }
+        
+        .delete-button {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: #f44336;
+            color: #fff;
+            border: none;
+            padding: 5px 10px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        
+        .add-button {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: #4CAF50;
+            color: #fff;
+            border: none;
+            padding: 5px 10px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        
+        /* Color coding for columns */
+        .to-do {
+            background-color: #ADD8E6;
+        }
+        
+        .in-progress {
+            background-color: #FFFF00;
+        }
+        
+        .review {
+            background-color: #FFA07A;
+        }
+        
+        .done {
+            background-color: #32CD32;
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <h1>Kanban Board</h1>
+    </header>
+    <div class="board">
+        <div class="column to-do">
+            <div class="column-header">To-Do</div>
+            <div id="to-do-cards"></div>
+        </div>
+        <div class="column in-progress">
+            <div class="column-header">In Progress</div>
+            <div id="in-progress-cards"></div>
+        </div>
+        <div class="column review">
+            <div class="column-header">Review</div>
+            <div id="review-cards"></div>
+        </div>
+        <div class="column done">
+            <div class="column-header">Done</div>
+            <div id="done-cards"></div>
+        </div>
+    </div>
+    <button class="add-button" onclick="addCard()">Add Card</button>
+
+    <script>
+        let cards = [];
+        let draggedCard = null;
+
+        // Function to add new card
+        function addCard() {
+            let title = prompt("Enter card title:");
+            let description = prompt("Enter card description (optional):");
+            let column = "to-do";
+            let card = {
+                title: title,
+                description: description,
+                column: column
+            };
+            cards.push(card);
+            renderCards();
+        }
+
+        // Function to render cards
+        function renderCards() {
+            let toDoCards = document.getElementById("to-do-cards");
+            let inProgressCards = document.getElementById("in-progress-cards");
+            let reviewCards = document.getElementById("review-cards");
+            let doneCards = document.getElementById("done-cards");
+
+            toDoCards.innerHTML = "";
+            inProgressCards.innerHTML = "";
+            reviewCards.innerHTML = "";
+            doneCards.innerHTML = "";
+
+            cards.forEach((card, index) => {
+                let cardHTML = `
+                    <div class="card" draggable="true" ondragstart="dragStart(${index})">
+                        <div class="card-title">${card.title}</div>
+                        <div class="card-description">${card.description}</div>
+                        <button class="delete-button" onclick="deleteCard(${index})">Delete</button>
+                    </div>
+                `;
+                if (card.column === "to-do") {
+                    toDoCards.innerHTML += cardHTML;
+                } else if (card.column === "in-progress") {
+                    inProgressCards.innerHTML += cardHTML;
+                } else if (card.column === "review") {
+                    reviewCards.innerHTML += cardHTML;
+                } else if (card.column === "done") {
+                    doneCards.innerHTML += cardHTML;
+                }
+            });
+        }
+
+        // Function to handle drag start
+        function dragStart(index) {
+            draggedCard = cards[index];
+        }
+
+        // Function to handle drop
+        function drop(event) {
+            event.preventDefault();
+            let column = event.target.closest(".column");
+            if (column) {
+                let columnName = column.classList[1];
+                draggedCard.column = columnName;
+                renderCards();
+            }
+        }
+
+        // Function to delete card
+        function deleteCard(index) {
+            cards.splice(index, 1);
+            renderCards();
+        }
+
+        // Add event listeners for drop
+        let columns = document.querySelectorAll(".column");
+        columns.forEach((column) => {
+            column.addEventListener("dragover", (event) => {
+                event.preventDefault();
+            });
+            column.addEventListener("drop", drop);
+        });
+    </script>
+</body>
+</html>
+ 
